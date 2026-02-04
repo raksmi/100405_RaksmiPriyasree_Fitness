@@ -1,8 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 import pandas as pd
-import streamlit as st
-import google.generativeai as genai
 from gtts import gTTS
 import os
 from io import BytesIO
@@ -141,7 +139,7 @@ def display_bmi_calculator():
     col1, col2, col3 = st.columns([1, 1, 1])
     
     with col1:
-        weight = st.number_input("Weight (kg)", min_value=20, max_value=200, value=70, step=0.5)
+        weight = st.number_input("Weight (kg)", min_value=20.0, max_value=200.0, value=70.0, step=0.5)
     
     with col2:
         height = st.number_input("Height (cm)", min_value=100, max_value=250, value=170, step=1)
@@ -851,4 +849,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
