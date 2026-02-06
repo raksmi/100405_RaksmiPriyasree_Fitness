@@ -11,6 +11,12 @@ import re
 import plotly.express as px
 from datetime import datetime
 import os
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib import colors
 
 st.set_page_config(
     page_title="CoachBot AI",
@@ -70,12 +76,12 @@ def initialize_gemini():
         
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
+            model_name="gemini-2.0-flash-exp",
             generation_config={
                 "temperature": 0.7,
                 "top_p": 0.8,
                 "top_k": 40,
-                "max_output_tokens": 4000
+                "max_output_tokens": 8192  # Increased from 4000 to prevent truncation
             }
         )
         
@@ -104,6 +110,8 @@ if 'workouts_generated' not in st.session_state:
     st.session_state.workouts_generated = 0
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
+if 'generated_plan' not in st.session_state:
+    st.session_state.generated_plan = None
 
 SPORT_CONFIG = {
     "Football": {
@@ -271,7 +279,7 @@ def create_training_prompt(user_data, focus_area="general"):
         4. Safety precautions and form tips
         5. Intensity guidelines (1-10 scale)
         
-        Make it age-appropriate, safe, and motivating. Use emojis and bullet points.in table format in 250 words
+        Make it age-appropriate, safe, and motivating. Use emojis and bullet points. Format in tables. Provide detailed and comprehensive information.
         """,
         
         "nutrition": f"""
@@ -297,7 +305,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. Sample one-day meal plan
         7. Healthy snack options
         
-        Consider age-appropriate nutritional needs and BMI status, give it in table, in 250 words
+        Consider age-appropriate nutritional needs and BMI status. Format in tables. Provide detailed and comprehensive information.
         """,
         
         "recovery": f"""
@@ -319,7 +327,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. When to seek medical attention
         7. Active recovery activities
         
-        Prioritize safety and proper technique.in 250 words
+        Prioritize safety and proper technique. Provide detailed and comprehensive information.
         """,
         
         "tactical": f"""
@@ -340,7 +348,7 @@ def create_training_prompt(user_data, focus_area="general"):
         5. Reading the game
         6. Mental preparation for competition
         
-        Make it practical and easy to understand for young athletes.in 250 words
+        Make it practical and easy to understand for young athletes. Provide detailed and comprehensive information.
         """,
         
         "mental": f"""
@@ -361,11 +369,179 @@ def create_training_prompt(user_data, focus_area="general"):
         6. Building confidence
         7. Handling pressure situations
         
-        Make it age-appropriate and practical.in 250 words
+        Make it age-appropriate and practical. Provide detailed and comprehensive information.
         """
     }
     
     return prompts.get(focus_area, prompts["workout"])
+
+def create_pdf(plan_text, plan_type):
+    """Create PDF from generated plan text"""
+    pdf_buffer = BytesIO()
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#667eea'),
+        alignment=TA_CENTER,
+        spaceAfter=30
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        textColor=colors.HexColor('#764ba2'),
+        spaceAfter=12,
+        spaceBefore=20
+    )
+    
+    body_style = ParagraphStyle(
+        'CustomBody',
+        parent=styles['BodyText'],
+        fontSize=11,
+        spaceAfter=12,
+        leading=14
+    )
+    
+    story = []
+    
+    # Title
+    story.append(Paragraph(f"CoachBot AI - {plan_type} Plan", title_style))
+    story.append(Spacer(1, 20))
+    
+    # Profile information
+    profile = st.session_state.user_profile
+    if profile:
+        profile_data = [
+            ["Sport", profile.get('sport', 'N/A')],
+            ["Position", profile.get('position', 'N/A')],
+            ["Age", f"{profile.get('age', 'N/A')} years"],
+            ["Fitness Level", profile.get('fitness_level', 'N/A')],
+            ["Goal", profile.get('goal', 'N/A')],
+            ["BMI", f"{profile.get('bmi', 'N/A')} ({profile.get('bmi_category', 'N/A')})"],
+        ]
+        
+        profile_table = Table(profile_data, colWidths=[2*inch, 4*inch])
+        profile_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        story.append(Paragraph("Athlete Profile", heading_style))
+        story.append(profile_table)
+        story.append(Spacer(1, 30))
+    
+    # Plan content - Process markdown-style formatting
+    story.append(Paragraph("Your Personalized Plan", heading_style))
+    
+    # Split text into paragraphs
+    lines = plan_text.split('\n')
+    for line in lines:
+        line = line.strip()
+        if line:
+            # Convert markdown headers to PDF paragraphs
+            if line.startswith('###'):
+                text = line.replace('###', '').strip()
+                story.append(Paragraph(text, heading_style))
+            elif line.startswith('##'):
+                text = line.replace('##', '').strip()
+                story.append(Paragraph(text, heading_style))
+            elif line.startswith('#'):
+                text = line.replace('#', '').strip()
+                story.append(Paragraph(text, title_style))
+            elif line.startswith('-') or line.startswith('*'):
+                # Bullet points
+                text = line.replace('-', '').replace('*', '').strip()
+                story.append(Paragraph(f"• {text}", body_style))
+            elif line.startswith('|'):
+                # Table row - skip for now, would need more complex parsing
+                continue
+            else:
+                # Regular paragraph
+                story.append(Paragraph(line, body_style))
+    
+    # Footer
+    story.append(Spacer(1, 40))
+    story.append(Paragraph("Generated by CoachBot AI", ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.gray,
+        alignment=TA_CENTER
+    )))
+    
+    doc.build(story)
+    pdf_buffer.seek(0)
+    return pdf_buffer
+
+def generate_ai_plan(plan_type):
+    """Generate AI-powered plan based on type"""
+    if not model:
+        st.error("❌ **AI Model Not Available**")
+        st.error("Please configure your GEMINI_API_KEY to use AI-generated plans.")
+        st.error("This app requires AI features to function properly.")
+        return
+    
+    profile = st.session_state.user_profile
+    
+    if not profile:
+        st.error("❌ **Profile Not Found**")
+        st.error("Please complete your profile setup first.")
+        return
+    
+    try:
+        # Create specialized prompt
+        prompt = create_training_prompt(profile, plan_type)
+        
+        # Add additional instructions for better output
+        prompt += "\n\nIMPORTANT: Make the output detailed, specific, and actionable. Use Markdown formatting with headers, bullet points, and proper structure. Provide comprehensive information without limiting word count."
+        
+        with st.spinner("🧠 AI Coach is creating your personalized plan..."):
+            # Generate content
+            response = model.generate_content(prompt)
+            
+            if not response or not response.text:
+                st.error("❌ **AI Generation Failed**")
+                st.error("The AI did not return any content. Please try again.")
+                return
+            
+            # Store the generated plan
+            st.session_state.generated_plan = response.text
+            st.session_state.plan_type = plan_type
+            st.session_state.workouts_generated += 1
+            
+            st.success("✅ **AI-Generated Plan Created Successfully!**")
+            st.info("Your personalized plan is ready below.")
+            st.rerun()
+            
+    except Exception as e:
+        st.error(f"❌ **AI Generation Error:** {str(e)}")
+        st.error("There was a problem generating your AI plan.")
+        st.info(f"Error details: {type(e).__name__}")
+        
+        # Try one more time with simpler prompt
+        try:
+            simple_prompt = f"Create a detailed {plan_type} plan for a {profile.get('sport', 'athlete')}. Provide comprehensive information with tables and detailed explanations."
+            response = model.generate_content(simple_prompt)
+            st.session_state.generated_plan = response.text
+            st.session_state.plan_type = plan_type
+            st.session_state.workouts_generated += 1
+            st.success("✅ Plan generated with fallback method!")
+            st.rerun()
+        except:
+            st.error("❌ **Could not generate plan**")
+            st.error("Please check your API key and try again.")
 
 # ---------------- PAGE FUNCTIONS ----------------
 
@@ -410,6 +586,7 @@ def dashboard_page():
         - 🏥 Provide AI-driven recovery strategies
         - 🧠 Offer AI-powered mental training
         - 💬 Chat with your AI coach anytime
+        - 📥 Download your plans as PDF
         
         **All plans and advice are generated by AI based on your unique profile!**
         """)
@@ -423,6 +600,7 @@ def dashboard_page():
         3. Generate AI training plans
         4. Get AI nutrition advice
         5. Chat with AI Coach
+        6. Download PDF plans
         """)
     
     st.markdown("---")
@@ -435,7 +613,8 @@ def dashboard_page():
         "AI Recovery Plans": "AI-driven injury prevention and recovery strategies",
         "AI Mental Training": "AI-powered sports psychology and motivation techniques",
         "AI Tactical Tips": "AI-generated sport-specific strategies and game intelligence",
-        "24/7 AI Coach Chat": "Real-time AI coaching and personalized advice"
+        "24/7 AI Coach Chat": "Real-time AI coaching and personalized advice",
+        "PDF Download": "Download your generated plans as professional PDF documents"
     }
     
     for feature, description in features.items():
@@ -560,64 +739,6 @@ def profile_setup_page():
             st.success("✅ Profile saved successfully!")
             st.info("🎉 Now you can generate your personalized training plan!")
 
-# Everything will be AI-generated - no fallback plans needed
-
-def generate_ai_plan(plan_type):
-    """Generate AI-powered plan based on type"""
-    if not model:
-        st.error("❌ **AI Model Not Available**")
-        st.error("Please configure your GEMINI_API_KEY to use AI-generated plans.")
-        st.error("This app requires AI features to function properly.")
-        return
-    
-    profile = st.session_state.user_profile
-    
-    if not profile:
-        st.error("❌ **Profile Not Found**")
-        st.error("Please complete your profile setup first.")
-        return
-    
-    try:
-        # Create specialized prompt
-        prompt = create_training_prompt(profile, plan_type)
-        
-        # Add additional instructions for better output
-        prompt += "\n\nIMPORTANT: Make the output detailed, specific, and actionable. Use Markdown formatting with headers, bullet points, and proper structure."
-        
-        with st.spinner("🧠 AI Coach is creating your personalized plan..."):
-            # Generate content
-            response = model.generate_content(prompt)
-            
-            if not response or not response.text:
-                st.error("❌ **AI Generation Failed**")
-                st.error("The AI did not return any content. Please try again.")
-                return
-            
-            # Store the generated plan
-            st.session_state.generated_plan = response.text
-            st.session_state.workouts_generated += 1
-            
-            st.success("✅ **AI-Generated Plan Created Successfully!**")
-            st.info("Your personalized plan is ready below.")
-            st.rerun()
-            
-    except Exception as e:
-        st.error(f"❌ **AI Generation Error:** {str(e)}")
-        st.error("There was a problem generating your AI plan.")
-        st.info(f"Error details: {type(e).__name__}")
-        
-        # Try one more time with simpler prompt
-        try:
-            simple_prompt = f"Create a {plan_type} plan for a {profile.get('sport', 'athlete')}."
-            response = model.generate_content(simple_prompt)
-            st.session_state.generated_plan = response.text
-            st.session_state.workouts_generated += 1
-            st.success("✅ Plan generated with fallback method!")
-            st.rerun()
-        except:
-            st.error("❌ **Could not generate plan**")
-            st.error("Please check your API key and try again.")
-
 def training_plan_page():
     try:
         st.markdown('<div class="main-header"><h1>💪 AI Training Plan Generator</h1></div>', unsafe_allow_html=True)
@@ -689,6 +810,24 @@ def training_plan_page():
             st.markdown(st.session_state.generated_plan)
             
             st.markdown("---")
+            
+            # Download PDF button
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col2:
+                plan_type = st.session_state.get('plan_type', 'Workout Plan')
+                if st.button("📥 Download Plan as PDF", use_container_width=True):
+                    try:
+                        pdf_buffer = create_pdf(st.session_state.generated_plan, plan_type)
+                        st.download_button(
+                            label="⬇️ Click to Download PDF",
+                            data=pdf_buffer,
+                            file_name=f"CoachBot_{plan_type.replace(' ', '_')}_Plan.pdf",
+                            mime="application/pdf"
+                        )
+                    except Exception as e:
+                        st.error(f"❌ **PDF Generation Error:** {str(e)}")
+                        st.info("An error occurred while creating the PDF. Please try again.")
+            
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 if st.button("🔄 Generate New Plan", use_container_width=True):
@@ -1006,10 +1145,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
