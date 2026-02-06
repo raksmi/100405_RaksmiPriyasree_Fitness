@@ -78,7 +78,7 @@ def initialize_gemini():
                 "temperature": 0.7,
                 "top_p": 0.8,
                 "top_k": 40,
-                "max_output_tokens": 2000
+                "max_output_tokens": 4000
             }
         )
         
@@ -1014,6 +1014,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
