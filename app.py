@@ -279,7 +279,7 @@ def create_training_prompt(user_data, focus_area="general"):
         4. Safety precautions and form tips
         5. Intensity guidelines (1-10 scale)
         
-        Make it age-appropriate, safe, and motivating. Use emojis and bullet points.in table format
+        Make it age-appropriate, safe, and motivating. Use emojis and bullet points.in table format in 250 words
         """,
         
         "nutrition": f"""
@@ -305,7 +305,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. Sample one-day meal plan
         7. Healthy snack options
         
-        Consider age-appropriate nutritional needs and BMI status.give it in table
+        Consider age-appropriate nutritional needs and BMI status, give it in table, in 250 words
         """,
         
         "recovery": f"""
@@ -327,7 +327,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. When to seek medical attention
         7. Active recovery activities
         
-        Prioritize safety and proper technique.
+        Prioritize safety and proper technique.in 250 words
         """,
         
         "tactical": f"""
@@ -348,7 +348,7 @@ def create_training_prompt(user_data, focus_area="general"):
         5. Reading the game
         6. Mental preparation for competition
         
-        Make it practical and easy to understand for young athletes.
+        Make it practical and easy to understand for young athletes.in 250 words
         """,
         
         "mental": f"""
@@ -369,7 +369,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. Building confidence
         7. Handling pressure situations
         
-        Make it age-appropriate and practical.
+        Make it age-appropriate and practical.in 250 words
         """
     }
     
@@ -1014,6 +1014,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
