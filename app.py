@@ -57,22 +57,24 @@ load_custom_css()
 @st.cache_resource
 def initialize_gemini():
     """Initialize Gemini API with Streamlit secrets"""
-    api_key = st.secrets.get("GEMINI_API_KEY", None)
-    if not api_key:
-        st.error("⚠️ Please add your GEMINI_API_KEY to Streamlit secrets!")
+    try:
+        api_key = st.secrets.get("GEMINI_API_KEY", None)
+        if not api_key:
+            return None
+        
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            generation_config={
+                "temperature": 0.7,
+                "top_p": 0.8,
+                "top_k": 40,
+                "max_output_tokens": 2000
+            }
+        )
+        return model
+    except Exception as e:
         return None
-    
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
-        generation_config={
-            "temperature": 0.7,
-            "top_p": 0.8,
-            "top_k": 40,
-            "max_output_tokens": 2000
-        }
-    )
-    return model
 
 model = initialize_gemini()
 
@@ -533,194 +535,224 @@ def profile_setup_page():
             st.info("🎉 Now you can generate your personalized training plan!")
 
 def training_plan_page():
-    st.markdown('<div class="main-header"><h1>💪 Training Plan Generator</h1></div>', unsafe_allow_html=True)
-    
-    # Check if profile exists
-    if not st.session_state.user_profile or 'sport' not in st.session_state.user_profile:
-        st.warning("⚠️ Please set up your profile first!")
-        st.info("💡 Go to the Profile Setup page and complete your profile.")
-        return
-    
-    # Display current profile summary
-    st.subheader("📋 Your Profile")
-    profile = st.session_state.user_profile
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Sport", f"{SPORT_CONFIG.get(profile['sport'], {}).get('icon', '🏆')} {profile['sport']}")
-        st.metric("Position", profile['position'])
-    with col2:
-        st.metric("Fitness Level", profile['fitness_level'])
-        st.metric("Experience", profile['experience'])
-    with col3:
-        st.metric("BMI", f"{profile.get('bmi', 'N/A')}")
-        st.metric("Goal", profile['goal'])
-    
-    st.markdown("---")
-    
-    # Generate Options
-    st.subheader("🎯 Generate Your Plan")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        if st.button("🏋️ Workout Plan", use_container_width=True):
-            generate_ai_plan("workout")
-    
-    with col2:
-        if st.button("🥗 Nutrition Plan", use_container_width=True):
-            generate_ai_plan("nutrition")
-    
-    with col3:
-        if st.button("🏥 Recovery Plan", use_container_width=True):
-            generate_ai_plan("recovery")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("🧠 Mental Training", use_container_width=True):
-            generate_ai_plan("mental")
-    
-    with col2:
-        if st.button("🎯 Tactical Tips", use_container_width=True):
-            generate_ai_plan("tactical")
-    
-    # Display generated plan
-    if 'generated_plan' in st.session_state and st.session_state.generated_plan:
+    try:
+        st.markdown('<div class="main-header"><h1>💪 Training Plan Generator</h1></div>', unsafe_allow_html=True)
+        
+        # Check if profile exists
+        if not st.session_state.user_profile or 'sport' not in st.session_state.user_profile:
+            st.warning("⚠️ Please set up your profile first!")
+            st.info("💡 Go to the Profile Setup page and complete your profile.")
+            return
+        
+        # Display current profile summary
+        st.subheader("📋 Your Profile")
+        profile = st.session_state.user_profile
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Sport", f"{SPORT_CONFIG.get(profile['sport'], {}).get('icon', '🏆')} {profile['sport']}")
+            st.metric("Position", profile['position'])
+        with col2:
+            st.metric("Fitness Level", profile['fitness_level'])
+            st.metric("Experience", profile['experience'])
+        with col3:
+            st.metric("BMI", f"{profile.get('bmi', 'N/A')}")
+            st.metric("Goal", profile['goal'])
+        
         st.markdown("---")
-        st.markdown('<div class="main-header"><h2>📋 Your Personalized Plan</h2></div>', unsafe_allow_html=True)
-        st.markdown(st.session_state.generated_plan)
+        
+        # Generate Options
+        st.subheader("🎯 Generate Your Plan")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🏋️ Workout Plan", use_container_width=True):
+                generate_ai_plan("workout")
+        
+        with col2:
+            if st.button("🥗 Nutrition Plan", use_container_width=True):
+                generate_ai_plan("nutrition")
+        
+        with col3:
+            if st.button("🏥 Recovery Plan", use_container_width=True):
+                generate_ai_plan("recovery")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🧠 Mental Training", use_container_width=True):
+                generate_ai_plan("mental")
+        
+        with col2:
+            if st.button("🎯 Tactical Tips", use_container_width=True):
+                generate_ai_plan("tactical")
+        
+        # Display generated plan
+        if 'generated_plan' in st.session_state and st.session_state.generated_plan:
+            st.markdown("---")
+            st.markdown('<div class="main-header"><h2>📋 Your Personalized Plan</h2></div>', unsafe_allow_html=True)
+            st.markdown(st.session_state.generated_plan)
+    except Exception as e:
+        st.error(f"Error in training plan page: {str(e)}")
+        return
 
 def nutrition_page():
-    st.markdown('<div class="main-header"><h1>🥗 Nutrition Guide</h1></div>', unsafe_allow_html=True)
-    
-    if not st.session_state.user_profile:
-        st.warning("⚠️ Please set up your profile first!")
+    try:
+        st.markdown('<div class="main-header"><h1>🥗 Nutrition Guide</h1></div>', unsafe_allow_html=True)
+        
+        if not st.session_state.user_profile:
+            st.warning("⚠️ Please set up your profile first!")
+            return
+        
+        profile = st.session_state.user_profile
+        
+        st.subheader("📊 Your Nutritional Needs")
+        
+        # Calculate daily calories based on BMI and activity
+        weight = profile.get('weight', 65)
+        height = profile.get('height', 170)
+        age = profile.get('age', 15)
+        gender = profile.get('gender', 'Male')
+        
+        # Simple BMR calculation
+        if gender == "Male":
+            bmr = 10 * weight + 6.25 * height - 5 * age + 5
+        else:
+            bmr = 10 * weight + 6.25 * height - 5 * age - 161
+        
+        activity_multiplier = {
+            "2 days/week": 1.375,
+            "3 days/week": 1.55,
+            "4 days/week": 1.725,
+            "5 days/week": 1.9
+        }
+        
+        frequency = profile.get('frequency', '3 days/week')
+        tdee = bmr * activity_multiplier.get(frequency, 1.55)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("🔥 BMR", f"{int(bmr)} cal")
+        with col2:
+            st.metric("⚡ Daily Calories", f"{int(tdee)} cal")
+        with col3:
+            st.metric("🥩 Protein", f"{int((tdee * 0.3) / 4)}g")
+        with col4:
+            st.metric("🍞 Carbs", f"{int((tdee * 0.45) / 4)}g")
+    except Exception as e:
+        st.error(f"Error calculating nutrition data: {str(e)}")
         return
     
-    profile = st.session_state.user_profile
-    
-    st.subheader("📊 Your Nutritional Needs")
-    
-    # Calculate daily calories based on BMI and activity
-    weight = profile.get('weight', 65)
-    height = profile.get('height', 170)
-    age = profile.get('age', 15)
-    gender = profile.get('gender', 'Male')
-    
-    # Simple BMR calculation
-    if gender == "Male":
-        bmr = 10 * weight + 6.25 * height - 5 * age + 5
-    else:
-        bmr = 10 * weight + 6.25 * height - 5 * age - 161
-    
-    activity_multiplier = {
-        "2 days/week": 1.375,
-        "3 days/week": 1.55,
-        "4 days/week": 1.725,
-        "5 days/week": 1.9
-    }
-    
-    frequency = profile.get('frequency', '3 days/week')
-    tdee = bmr * activity_multiplier.get(frequency, 1.55)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("🔥 BMR", f"{int(bmr)} cal")
-    with col2:
-        st.metric("⚡ Daily Calories", f"{int(tdee)} cal")
-    with col3:
-        st.metric("🥩 Protein", f"{int((tdee * 0.3) / 4)}g")
-    with col4:
-        st.metric("🍞 Carbs", f"{int((tdee * 0.45) / 4)}g")
-    
     st.markdown("---")
-    
-    # Meal Suggestions
-    st.subheader("🍽️ Daily Meal Structure")
-    
-    meals = [
-        {
-            "name": "🌅 Breakfast",
-            "time": "7:00 AM",
-            "calories": int(tdee * 0.25),
-            "suggestions": [
-                "Oatmeal with berries and nuts",
-                "Greek yogurt with honey and fruit",
-                "Whole grain toast with eggs",
-                "Smoothie with protein powder, banana, and spinach"
-            ]
-        },
-        {
-            "name": "🥪 Lunch",
-            "time": "12:30 PM",
-            "calories": int(tdee * 0.30),
-            "suggestions": [
-                "Grilled chicken salad with quinoa",
-                "Turkey sandwich on whole grain bread",
-                "Brown rice with vegetables and lean protein",
-                "Pasta with tomato sauce and ground turkey"
-            ]
-        },
-        {
-            "name": "🍎 Snack",
-            "time": "3:30 PM",
-            "calories": int(tdee * 0.15),
-            "suggestions": [
-                "Apple with almond butter",
-                "Greek yogurt with granola",
-                "Protein shake",
-                "Mixed nuts and dried fruits"
-            ]
-        },
-        {
-            "name": "🍝 Dinner",
-            "time": "7:00 PM",
-            "calories": int(tdee * 0.30),
-            "suggestions": [
-                "Grilled fish with vegetables",
-                "Lean beef stir-fry with brown rice",
-                "Chicken breast with sweet potato",
-                "Vegetable curry with lentils"
-            ]
-        }
-    ]
-    
-    for meal in meals:
-        st.markdown(f"""
-        <div class="metric-card">
-            <h3>{meal['name']} - {meal['time']}</h3>
-            <p><strong>Calories:</strong> {meal['calories']}</p>
-            <p><strong>Suggestions:</strong></p>
-            <ul>
-        """, unsafe_allow_html=True)
         
-        for suggestion in meal['suggestions']:
-            st.markdown(f"<li>{suggestion}</li>", unsafe_allow_html=True)
+        # Meal Suggestions
+        st.subheader("🍽️ Daily Meal Structure")
         
-        st.markdown("</ul></div>", unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # Hydration
-    st.subheader("💧 Hydration Guidelines")
-    st.info("""
-    💧 **Daily Water Intake:** 2-3 liters
-    
-    **Additional fluid needs during training:**
-    - Before training: 500ml (2 hours before)
-    - During training: 150-200ml every 15-20 minutes
-    - After training: 500-750ml for recovery
-    
-    **Signs of dehydration:**
-    - Dark urine
-    - Dry mouth
-    - Fatigue
-    - Dizziness
-    """)
+        meals = [
+            {
+                "name": "🌅 Breakfast",
+                "time": "7:00 AM",
+                "calories": int(tdee * 0.25),
+                "suggestions": [
+                    "Oatmeal with berries and nuts",
+                    "Greek yogurt with honey and fruit",
+                    "Whole grain toast with eggs",
+                    "Smoothie with protein powder, banana, and spinach"
+                ]
+            },
+            {
+                "name": "🥪 Lunch",
+                "time": "12:30 PM",
+                "calories": int(tdee * 0.30),
+                "suggestions": [
+                    "Grilled chicken salad with quinoa",
+                    "Turkey sandwich on whole grain bread",
+                    "Brown rice with vegetables and lean protein",
+                    "Pasta with tomato sauce and ground turkey"
+                ]
+            },
+            {
+                "name": "🍎 Snack",
+                "time": "3:30 PM",
+                "calories": int(tdee * 0.15),
+                "suggestions": [
+                    "Apple with almond butter",
+                    "Greek yogurt with granola",
+                    "Protein shake",
+                    "Mixed nuts and dried fruits"
+                ]
+            },
+            {
+                "name": "🍝 Dinner",
+                "time": "7:00 PM",
+                "calories": int(tdee * 0.30),
+                "suggestions": [
+                    "Grilled fish with vegetables",
+                    "Lean beef stir-fry with brown rice",
+                    "Chicken breast with sweet potato",
+                    "Vegetable curry with lentils"
+                ]
+            }
+        ]
+        
+        for meal in meals:
+            st.markdown(f"""
+            <div class="metric-card">
+                <h3>{meal['name']} - {meal['time']}</h3>
+                <p><strong>Calories:</strong> {meal['calories']}</p>
+                <p><strong>Suggestions:</strong></p>
+                <ul>
+            """, unsafe_allow_html=True)
+            
+            for suggestion in meal['suggestions']:
+                st.markdown(f"<li>{suggestion}</li>", unsafe_allow_html=True)
+            
+            st.markdown("</ul></div>", unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Hydration
+        st.subheader("💧 Hydration Guidelines")
+        st.info("""
+        💧 **Daily Water Intake:** 2-3 liters
+        
+        **Additional fluid needs during training:**
+        - Before training: 500ml (2 hours before)
+        - During training: 150-200ml every 15-20 minutes
+        - After training: 500-750ml for recovery
+        
+        **Signs of dehydration:**
+        - Dark urine
+        - Dry mouth
+        - Fatigue
+        - Dizziness
+        """)
+    except Exception as e:
+        st.error(f"Error displaying nutrition information: {str(e)}")
+        return
 
 def ai_coach_page():
     st.markdown('<div class="main-header"><h1>💬 AI Coach Chat</h1></div>', unsafe_allow_html=True)
+    
+    # Check if API is configured
+    if not model:
+        st.warning("⚠️ **AI Coach is currently unavailable**")
+        st.info("""
+        📝 **Note:** The AI Coach feature requires a Google Generative AI API key.
+        
+        **To enable AI features:**
+        1. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+        2. Add it to your Streamlit secrets as `GEMINI_API_KEY`
+        3. Restart the app
+        
+        **Available Features without API:**
+        - ✅ BMI Calculator
+        - ✅ Profile Setup
+        - ✅ Nutrition Guide (pre-calculated)
+        - ✅ Dashboard
+        """)
+        return
     
     # Chat History Display
     chat_container = st.container()
@@ -762,7 +794,7 @@ def ai_coach_page():
     col1, col2 = st.columns([4, 1])
     with col2:
         if st.button("Send 📤", use_container_width=True):
-            if user_question and model:
+            if user_question:
                 # Add user message
                 st.session_state.chat_history.append({"role": "user", "content": user_question})
                 
@@ -778,14 +810,22 @@ def ai_coach_page():
                 Use emojis to make it engaging. Keep responses concise but comprehensive.
                 """
                 
-                with st.spinner("🏋️ CoachBot is thinking..."):
-                    response = model.generate_content(context)
-                    ai_response = response.text
-                
-                st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
-                st.rerun()
+                try:
+                    with st.spinner("🏋️ CoachBot is thinking..."):
+                        response = model.generate_content(context)
+                        ai_response = response.text
+                    
+                    st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Sorry, I encountered an error: {str(e)}")
+                    st.session_state.chat_history.append({
+                        "role": "assistant", 
+                        "content": "Sorry, I couldn't process your request right now. Please try again later."
+                    })
+                    st.rerun()
             else:
-                st.warning("Please enter a question or configure the API key.")
+                st.warning("Please enter a question.")
     
     # Quick Questions
     st.markdown("---")
@@ -804,7 +844,7 @@ def ai_coach_page():
         with cols[i]:
             if st.button(question, key=f"quick_{i}", use_container_width=True):
                 st.session_state.chat_history.append({"role": "user", "content": question})
-                if model:
+                try:
                     context = f"""
                     You are a friendly youth sports coach.
                     Answer this question: {question}
@@ -813,39 +853,275 @@ def ai_coach_page():
                     response = model.generate_content(context)
                     st.session_state.chat_history.append({"role": "assistant", "content": response.text})
                     st.rerun()
+                except Exception as e:
+                    st.error(f"Sorry, I encountered an error: {str(e)}")
+                    st.session_state.chat_history.append({
+                        "role": "assistant", 
+                        "content": "Sorry, I couldn't process your request right now. Please try again later."
+                    })
+                    st.rerun()
 
 # ---------------- HELPER FUNCTIONS ----------------
+def get_fallback_plan(plan_type, profile):
+    """Get pre-calculated plans as fallback when API is unavailable"""
+    
+    sport = profile.get('sport', 'General')
+    fitness_level = profile.get('fitness_level', 'Beginner')
+    
+    if plan_type == "workout":
+        return f"""
+        # 💪 {sport} Workout Plan
+        **Fitness Level:** {fitness_level}
+        
+        ## 🏋️ Warm-up (10 minutes)
+        - Light jogging (5 minutes)
+        - Dynamic stretches: leg swings, arm circles, torso twists
+        - Sport-specific movements: {sport.lower()} movements
+        
+        ## 💪 Main Workout (35-45 minutes)
+        
+        **Strength Training:**
+        - Bodyweight Squats: 3 sets x 12-15 reps
+        - Push-ups: 3 sets x 8-12 reps
+        - Lunges: 3 sets x 10 reps per leg
+        - Plank hold: 3 sets x 30-45 seconds
+        
+        **Sport-Specific Drills:**
+        - Agility ladder exercises: 5 minutes
+        - Sprint intervals: 5 rounds x 30 seconds
+        - {sport} skill practice: 15 minutes
+        
+        ## 🧘 Cool-down (10 minutes)
+        - Static stretching: focus on major muscle groups
+        - Deep breathing exercises
+        - Light walking (3-5 minutes)
+        
+        ---
+        ⚠️ **Note:** This is a general template. For personalized plans, please add your GEMINI_API_KEY to enable AI features.
+        """
+    
+    elif plan_type == "nutrition":
+        weight = profile.get('weight', 70)
+        return f"""
+        # 🥗 Nutrition Plan for {weight}kg Athlete
+        
+        ## 📊 Daily Nutrition Goals
+        - **Calories:** ~{int(weight * 30-35)} kcal
+        - **Protein:** {int(weight * 1.6-2.0)}g (1.6-2.0g per kg)
+        - **Carbs:** {int(weight * 5-7)}g (5-7g per kg)
+        - **Fats:** {int(weight * 0.8-1.0)}g (0.8-1.0g per kg)
+        
+        ## 🍽️ Sample Daily Menu
+        
+        **🌅 Breakfast (7:00 AM)**
+        - Oatmeal with berries and nuts
+        - 1-2 eggs (scrambled or boiled)
+        - Glass of milk or plant-based alternative
+        
+        **🥪 Lunch (12:30 PM)**
+        - Grilled chicken or tofu (100-150g)
+        - Brown rice or quinoa (1 cup)
+        - Mixed vegetables
+        - Olive oil dressing
+        
+        **🍎 Snack (3:30 PM)**
+        - Greek yogurt with fruit
+        - Handful of nuts
+        - Protein shake (optional)
+        
+        **🍝 Dinner (7:00 PM)**
+        - Fish or lean meat (100-150g)
+        - Sweet potato or whole grains
+        - Steamed vegetables
+        - Side salad
+        
+        ## 💧 Hydration
+        - 2-3 liters of water daily
+        - 500ml before training
+        - 150-200ml every 15-20 minutes during training
+        
+        ---
+        ⚠️ **Note:** This is a general guideline. Consult a nutritionist for personalized advice.
+        """
+    
+    elif plan_type == "recovery":
+        return f"""
+        # 🏥 Recovery & Injury Prevention Plan
+        
+        ## 🛡️ Pre-Training Prevention
+        - Complete warm-up: 10-15 minutes
+        - Proper equipment check
+        - Hydrate before training
+        - Listen to your body
+        
+        ## 🧘 Post-Training Recovery
+        - Cool-down: 10 minutes
+        - Static stretching: hold each stretch 20-30 seconds
+        - Foam rolling: focus on tight areas
+        - Refuel within 30 minutes (protein + carbs)
+        
+        ## ⚠️ Warning Signs
+        - Persistent pain (not normal soreness)
+        - Swelling or redness
+        - Limited range of motion
+        - Sudden weakness
+        
+        ## 🔄 Active Recovery Activities
+        - Light swimming
+        - Yoga or Pilates
+        - Easy cycling
+        - Walking
+        
+        ## 🛏️ Rest & Sleep
+        - 8-10 hours of sleep
+        - Rest days between intense sessions
+        - Nap after hard training (20-30 minutes)
+        
+        ---
+        ⚠️ **Important:** If you experience serious pain or injury, consult a healthcare professional immediately.
+        """
+    
+    elif plan_type == "mental":
+        return f"""
+        # 🧠 Mental Training Plan
+        
+        ## 🎯 Goal Setting
+        - Set SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound)
+        - Write down your goals
+        - Review goals weekly
+        - Celebrate small victories
+        
+        ## 🏃 Visualization Techniques
+        - 5-10 minutes daily visualization
+        - Imagine perfect performance
+        - Focus on positive outcomes
+        - Use all senses in visualization
+        
+        ## 🎭 Pre-Competition Routine
+        - Develop a consistent routine
+        - Include breathing exercises
+        - Use positive self-talk
+        - Stay focused on the process, not outcome
+        
+        ## 💪 Building Confidence
+        - Reflect on past successes
+        - Focus on strengths
+        - Prepare thoroughly
+        - Surround yourself with supportive people
+        
+        ## 😌 Stress Management
+        - Deep breathing: 4-4-4-4 technique
+        - Progressive muscle relaxation
+        - Mindfulness meditation
+        - Talk to a coach or mentor
+        
+        ## 📈 Motivation Tips
+        - Find your "why"
+        - Track your progress
+        - Vary your training
+        - Reward yourself for achievements
+        
+        ---
+        ⚠️ **Note:** For personalized mental training, consider working with a sports psychologist.
+        """
+    
+    else:  # tactical
+        return f"""
+        # 🎯 Tactical Tips for {sport}
+        
+        ## 📋 Position Fundamentals
+        - Know your primary responsibilities
+        - Understand your role in different formations
+        - Master position-specific skills
+        - Communicate effectively with teammates
+        
+        ## 🧠 Game Intelligence
+        - Keep your head up - scan the field
+        - Anticipate opponents' moves
+        - Make quick, smart decisions
+        - Understand game tempo
+        
+        ## 🗣️ Communication Strategies
+        - Call out plays clearly
+        - Support teammates verbally
+        - Listen to coach instructions
+        - Stay positive under pressure
+        
+        ## 📊 Decision Making Drills
+        - Practice under time pressure
+        - Simulate game situations
+        - Work on quick reactions
+        - Develop spatial awareness
+        
+        ## 🎯 Pre-Competition Preparation
+        - Study opponents' strategies
+        - Review team tactics
+        - Visualize game scenarios
+        - Get adequate rest
+        
+        ## 🔥 In-Game Adjustments
+        - Adapt to opponents' tactics
+        - Stay flexible in your approach
+        - Make smart substitutions
+        - Maintain composure
+        
+        ---
+        ⚠️ **Note:** Work closely with your coach to develop sport-specific tactical skills.
+        """
+
 def generate_ai_plan(plan_type):
     """Generate AI-powered plan based on type"""
     if not model:
-        st.error("❌ AI model not available. Please configure your API key.")
+        # Use fallback plan when API is unavailable
+        profile = st.session_state.user_profile
+        fallback_plan = get_fallback_plan(plan_type, profile)
+        st.session_state.generated_plan = fallback_plan
+        st.session_state.workouts_generated += 1
+        st.warning("📝 **Using pre-designed plan template** (AI features unavailable)")
+        st.info("Add your GEMINI_API_KEY to unlock personalized AI-generated plans.")
+        st.rerun()
         return
     
     profile = st.session_state.user_profile
     prompt = create_training_prompt(profile, plan_type)
     
-    with st.spinner("🧠 AI Coach is creating your personalized plan..."):
-        response = model.generate_content(prompt)
-        st.session_state.generated_plan = response.text
+    try:
+        with st.spinner("🧠 AI Coach is creating your personalized plan..."):
+            response = model.generate_content(prompt)
+            st.session_state.generated_plan = response.text
+            st.session_state.workouts_generated += 1
+            st.success("✅ Plan generated successfully!")
+            st.rerun()
+    except Exception as e:
+        st.error(f"❌ **Error generating plan:** {str(e)}")
+        st.info("Falling back to pre-designed plan template...")
+        
+        # Use fallback plan on error
+        fallback_plan = get_fallback_plan(plan_type, profile)
+        st.session_state.generated_plan = fallback_plan
         st.session_state.workouts_generated += 1
-        st.success("✅ Plan generated successfully!")
         st.rerun()
+        return
 
 # ---------------- MAIN APP LOGIC ----------------
 def main():
-    # Display the current page
-    if st.session_state.page == 'Dashboard':
-        dashboard_page()
-    elif st.session_state.page == 'BMI Calculator':
-        bmi_calculator_page()
-    elif st.session_state.page == 'Profile Setup':
-        profile_setup_page()
-    elif st.session_state.page == 'Training Plan':
-        training_plan_page()
-    elif st.session_state.page == 'Nutrition':
-        nutrition_page()
-    elif st.session_state.page == 'AI Coach':
-        ai_coach_page()
+    try:
+        # Display the current page
+        if st.session_state.page == 'Dashboard':
+            dashboard_page()
+        elif st.session_state.page == 'BMI Calculator':
+            bmi_calculator_page()
+        elif st.session_state.page == 'Profile Setup':
+            profile_setup_page()
+        elif st.session_state.page == 'Training Plan':
+            training_plan_page()
+        elif st.session_state.page == 'Nutrition':
+            nutrition_page()
+        elif st.session_state.page == 'AI Coach':
+            ai_coach_page()
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+        st.info("Please refresh the page and try again.")
 
 if __name__ == "__main__":
     main()
