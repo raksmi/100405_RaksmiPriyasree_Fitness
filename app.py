@@ -76,7 +76,7 @@ def initialize_gemini():
         
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash-exp",
+            model_name="gemini-2.5-flash-exp",
             generation_config={
                 "temperature": 0.7,
                 "top_p": 0.8,
@@ -1145,3 +1145,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
