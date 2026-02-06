@@ -1,3 +1,6 @@
+caa finallall
+
+
 import streamlit as st
 import google.generativeai as genai
 import pandas as pd
@@ -24,236 +27,30 @@ st.set_page_config(
 def load_custom_css():
     st.markdown("""
     <style>
-        /* Modern Gradient Background */
-        .stApp {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        }
-        
-        /* Main Header - Glass Morphism */
         .main-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 3rem;
-            border-radius: 20px;
+            padding: 2rem;
+            border-radius: 15px;
             color: white;
             text-align: center;
             margin-bottom: 2rem;
-            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.1);
         }
-        
-        .main-header h1 {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-        
-        .main-header h2 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            font-weight: 700;
-        }
-        
-        /* Metric Cards - Modern Card Design */
         .metric-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin: 15px 0;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: all 0.3s ease;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 10px 0;
         }
-        
-        .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-        }
-        
-        .metric-card h3 {
-            color: #667eea;
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
-        }
-        
-        /* BMI Results */
         .bmi-result {
-            padding: 2.5rem;
-            border-radius: 20px;
-            margin: 1.5rem 0;
-            text-align: center;
-            font-size: 1.5rem;
-        }
-        
-        .bmi-underweight { 
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); 
-            border-left: 8px solid #ffc107; 
-            box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
-        }
-        
-        .bmi-normal { 
-            background: linear-gradient(135deg, #d4edda 0%, #95e1d3 100%); 
-            border-left: 8px solid #28a745; 
-            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
-        }
-        
-        .bmi-overweight { 
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); 
-            border-left: 8px solid #ffc107; 
-            box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
-        }
-        
-        .bmi-obese { 
-            background: linear-gradient(135deg, #f8d7da 0%, #ffcccc 100%); 
-            border-left: 8px solid #dc3545; 
-            box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
-        }
-        
-        /* Streamlit Elements Styling */
-        .stButton>button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            width: 100%;
-        }
-        
-        .stButton>button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-        
-        .stTextInput>div>div>input,
-        .stTextArea>div>div>textarea,
-        .stNumberInput>div>div>input,
-        .stSelectbox>div>div>select {
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #667eea;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 1rem;
-        }
-        
-        .stTextInput>div>div>input:focus,
-        .stTextArea>div>div>textarea:focus,
-        .stNumberInput>div>div>input:focus,
-        .stSelectbox>div>div>select:focus {
-            border-color: #764ba2;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-        
-        /* Info/Success/Warning/Error Boxes */
-        .stAlert {
-            border-radius: 15px !important;
-            border-left: 6px solid !important;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
-            backdrop-filter: blur(10px) !important;
-        }
-        
-        /* Sidebar Enhancement */
-        [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%) !important;
-        }
-        
-        [data-testid="stSidebar"] .css-17lntkn {
-            background: transparent;
-        }
-        
-        /* Metric Value Styling */
-        [data-testid="stMetricValue"] {
-            color: #667eea !important;
-            font-weight: 700 !important;
-        }
-        
-        [data-testid="stMetricLabel"] {
-            color: #666 !important;
-            font-weight: 600 !important;
-        }
-        
-        /* Chat Interface */
-        .chat-message-user {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             padding: 1.5rem;
-            border-radius: 20px;
-            margin: 1rem 0;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        .chat-message-assistant {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1.5rem;
-            border-radius: 20px;
-            margin: 1rem 0;
-            border-left: 5px solid #667eea;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Generated Plan Container */
-        .generated-plan {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            padding: 3rem;
-            border-radius: 25px;
-            margin: 2rem 0;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-            border: 2px solid rgba(102, 126, 234, 0.2);
-        }
-        
-        /* Animated Elements */
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        
-        /* Section Headers */
-        .section-header {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 2rem 0 1rem 0;
-        }
-        
-        /* Cards Grid */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin: 1.5rem 0;
-        }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 12px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
             border-radius: 10px;
+            margin: 1rem 0;
         }
-        
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        }
+        .bmi-underweight { background: #fff3cd; border-left: 5px solid #ffc107; }
+        .bmi-normal { background: #d4edda; border-left: 5px solid #28a745; }
+        .bmi-overweight { background: #fff3cd; border-left: 5px solid #ffc107; }
+        .bmi-obese { background: #f8d7da; border-left: 5px solid #dc3545; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -279,12 +76,12 @@ def initialize_gemini():
         
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash-exp",
+            model_name="gemini-2.5-flash",
             generation_config={
                 "temperature": 0.7,
                 "top_p": 0.8,
                 "top_k": 40,
-                "max_output_tokens": 4000
+                "max_output_tokens": 2000
             }
         )
         
@@ -301,8 +98,9 @@ model = initialize_gemini()
 
 # Check if model is available
 if not model:
-    st.warning("⚠️ **AI Features Limited**")
-    st.info("Some features require a valid Google Generative AI API key.")
+    st.error("⚠️ **AI Features Not Available**")
+    st.error("The app requires a valid Google Generative AI API key to function.")
+    st.info("Please add your GEMINI_API_KEY to Streamlit secrets and restart the app.")
 
 # ---------------- SESSION STATE ----------------
 if 'page' not in st.session_state:
@@ -457,15 +255,150 @@ def sidebar_navigation():
 
 sidebar_navigation()
 
+# ---------------- PROMPT TEMPLATES ----------------
+def create_training_prompt(user_data, focus_area="general"):
+    """Create specialized prompt based on focus area"""
+    
+    prompts = {
+        "workout": f"""
+        You are an elite youth sports coach specializing in {user_data['sport']}.
+        
+        ATHLETE PROFILE:
+        - Age: {user_data['age']} years
+        - Sport: {user_data['sport']}
+        - Position: {user_data['position']}
+        - Fitness Level: {user_data.get('fitness_level', 'Beginner')}
+        - Experience: {user_data.get('experience', '0-6 months')}
+        - BMI: {user_data.get('bmi', 'N/A')} ({user_data.get('bmi_category', 'N/A')})
+        - Training Goal: {user_data.get('goal', 'Improve overall fitness')}
+        - Injury History: {user_data.get('injury', 'None')}
+        - Training Frequency: {user_data.get('frequency', '3 days/week')}
+        - Session Duration: {user_data.get('duration', '60 minutes')}
+        
+        TASK: Generate a comprehensive workout plan including:
+        1. Warm-up routine (10-15 minutes)
+        2. Main workout exercises with sets, reps, and rest periods
+        3. Cool-down and stretching (10 minutes)
+        4. Safety precautions and form tips
+        5. Intensity guidelines (1-10 scale)
+        
+        Make it age-appropriate, safe, and motivating. Use emojis and bullet points.
+        """,
+        
+        "nutrition": f"""
+        You are a certified sports nutritionist for young athletes.
+        
+        ATHLETE PROFILE:
+        - Age: {user_data['age']} years
+        - Sport: {user_data['sport']}
+        - Position: {user_data['position']}
+        - Weight: {user_data.get('weight', 65)} kg
+        - Height: {user_data.get('height', 170)} cm
+        - BMI: {user_data.get('bmi', 'N/A')} ({user_data.get('bmi_category', 'N/A')})
+        - Diet Type: {user_data.get('diet', 'Balanced')}
+        - Allergies: {user_data.get('allergies', 'None')}
+        - Training Goal: {user_data.get('goal', 'Improve performance')}
+        
+        TASK: Create a personalized nutrition plan including:
+        1. Daily caloric needs estimation
+        2. Macronutrient breakdown (protein, carbs, fats)
+        3. Pre-workout meal suggestions
+        4. Post-workout recovery nutrition
+        5. Hydration guidelines
+        6. Sample one-day meal plan
+        7. Healthy snack options
+        
+        Consider age-appropriate nutritional needs and BMI status.
+        """,
+        
+        "recovery": f"""
+        You are a sports rehabilitation specialist.
+        
+        ATHLETE PROFILE:
+        - Age: {user_data['age']} years
+        - Sport: {user_data['sport']}
+        - Position: {user_data['position']}
+        - Injury History: {user_data.get('injury', 'None')}
+        - Current Limitations: {user_data.get('limitations', 'None')}
+        
+        TASK: Provide recovery and injury prevention strategies including:
+        1. Pre-training injury prevention exercises
+        2. Proper warm-up sequences
+        3. Recovery techniques after workouts
+        4. Stretching routines for {user_data['sport']}
+        5. Warning signs to watch for
+        6. When to seek medical attention
+        7. Active recovery activities
+        
+        Prioritize safety and proper technique.
+        """,
+        
+        "tactical": f"""
+        You are an expert {user_data['sport']} coach with tactical expertise.
+        
+        ATHLETE PROFILE:
+        - Age: {user_data['age']} years
+        - Sport: {user_data['sport']}
+        - Position: {user_data['position']}
+        - Experience: {user_data.get('experience', 'Beginner')}
+        - Skill Level: {user_data.get('fitness_level', 'Beginner')}
+        
+        TASK: Provide tactical coaching tips including:
+        1. Position-specific responsibilities
+        2. Decision-making drills
+        3. Game intelligence tips
+        4. Communication strategies
+        5. Reading the game
+        6. Mental preparation for competition
+        
+        Make it practical and easy to understand for young athletes.
+        """,
+        
+        "mental": f"""
+        You are a sports psychologist specializing in youth athletics.
+        
+        ATHLETE PROFILE:
+        - Age: {user_data['age']} years
+        - Sport: {user_data['sport']}
+        - Position: {user_data['position']}
+        - Experience: {user_data.get('experience', 'Beginner')}
+        
+        TASK: Provide mental training techniques including:
+        1. Goal-setting strategies
+        2. Visualization techniques
+        3. Pre-competition routines
+        4. Stress management tips
+        5. Motivation and focus exercises
+        6. Building confidence
+        7. Handling pressure situations
+        
+        Make it age-appropriate and practical.
+        """
+    }
+    
+    return prompts.get(focus_area, prompts["workout"])
+
 # ---------------- PAGE FUNCTIONS ----------------
 
 def dashboard_page():
     st.markdown('<div class="main-header"><h1>🏠 Welcome to CoachBot AI!</h1></div>', unsafe_allow_html=True)
     
+    # AI Status Check
+    st.subheader("🤖 AI System Status")
+    if model:
+        st.success("✅ **AI Model Connected and Ready**")
+        st.info("All features are powered by AI. Your plans and advice will be personalized based on your profile.")
+    else:
+        st.error("❌ **AI Model Not Connected**")
+        st.error("The app requires a valid GEMINI_API_KEY to function.")
+        st.warning("Please add your API key to Streamlit secrets to enable all features.")
+    
+    st.markdown("---")
+    
     # Quick Stats
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("📊 Plans Generated", st.session_state.workouts_generated)
+        st.metric("📊 AI Plans Generated", st.session_state.workouts_generated)
     with col2:
         st.metric("🎯 Profile Status", "✅ Complete" if st.session_state.user_profile else "⏳ Pending")
     with col3:
@@ -505,29 +438,24 @@ def dashboard_page():
     
     st.markdown("---")
     
-    # Featured Features
-    st.subheader("✨ Start Your Journey")
-    
-    features_grid = {
-        "📊 BMI Calculator": "Understand your body composition",
-        "👤 Profile Setup": "Customize your athletic profile",
-        "💪 AI Training": "Get personalized workout plans",
-        "🥗 AI Nutrition": "Eat right for your goals",
-        "🏥 AI Recovery": "Stay injury-free",
-        "🧠 Mental Training": "Build mental toughness",
-        "🎯 Tactical Tips": "Master your sport",
-        "💬 AI Coach Chat": "24/7 guidance"
+    # Features Overview
+    st.subheader("✨ AI-Powered Features")
+    features = {
+        "AI Workout Plans": "Personalized training plans generated by AI based on your profile",
+        "AI Nutrition Plans": "Custom meal plans and nutrition advice from AI",
+        "AI Recovery Plans": "AI-driven injury prevention and recovery strategies",
+        "AI Mental Training": "AI-powered sports psychology and motivation techniques",
+        "AI Tactical Tips": "AI-generated sport-specific strategies and game intelligence",
+        "24/7 AI Coach Chat": "Real-time AI coaching and personalized advice"
     }
     
-    cols = st.columns(4)
-    for i, (feature, description) in enumerate(features_grid.items()):
-        with cols[i % 4]:
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3>{feature}</h3>
-                <p>{description}</p>
-            </div>
-            """, unsafe_allow_html=True)
+    for feature, description in features.items():
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3>🤖 {feature}</h3>
+            <p>{description}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 def bmi_calculator_page():
     st.markdown('<div class="main-header"><h1>⚖️ BMI Calculator</h1></div>', unsafe_allow_html=True)
@@ -643,11 +571,14 @@ def profile_setup_page():
             st.success("✅ Profile saved successfully!")
             st.info("🎉 Now you can generate your personalized training plan!")
 
+# Everything will be AI-generated - no fallback plans needed
+
 def generate_ai_plan(plan_type):
     """Generate AI-powered plan based on type"""
     if not model:
         st.error("❌ **AI Model Not Available**")
         st.error("Please configure your GEMINI_API_KEY to use AI-generated plans.")
+        st.error("This app requires AI features to function properly.")
         return
     
     profile = st.session_state.user_profile
@@ -706,6 +637,7 @@ def training_plan_page():
         if not model:
             st.error("❌ **AI Features Not Available**")
             st.error("This app requires a valid Google Generative AI API key.")
+            st.error("Please configure your GEMINI_API_KEY in Streamlit secrets.")
             st.info("All plans are AI-generated. The app cannot function without the API key.")
             return
         
@@ -916,11 +848,14 @@ def ai_coach_page():
     if not model:
         st.error("❌ **AI Coach Not Available**")
         st.error("This app requires a valid Google Generative AI API key to function.")
+        st.error("Please configure your GEMINI_API_KEY in Streamlit secrets.")
         st.info("""
         **To enable AI features:**
         1. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
         2. Add it to Streamlit secrets as `GEMINI_API_KEY`
         3. Restart the app
+        
+        **This app requires AI features to work properly.**
         """)
         return
     
@@ -945,13 +880,13 @@ def ai_coach_page():
             for message in st.session_state.chat_history:
                 if message['role'] == 'user':
                     st.markdown(f"""
-                    <div class="chat-message-user">
+                    <div style="background: #667eea; color: white; padding: 15px; border-radius: 10px; margin: 10px 0;">
                         <strong>You:</strong> {message['content']}
                     </div>
                     """, unsafe_allow_html=True)
                 else:
                     st.markdown(f"""
-                    <div class="chat-message-assistant">
+                    <div style="background: white; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #667eea;">
                         <strong>🏋️ CoachBot:</strong> {message['content']}
                     </div>
                     """, unsafe_allow_html=True)
@@ -1082,4 +1017,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
