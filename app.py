@@ -279,7 +279,7 @@ def create_training_prompt(user_data, focus_area="general"):
         4. Safety precautions and form tips
         5. Intensity guidelines (1-10 scale)
         
-        Make it age-appropriate, safe, and motivating. Use emojis and bullet points.provide all day workout plan
+        Make it age-appropriate, safe, and motivating. Use emojis and bullet points.provide all day workout plan.. And also give it kinda short, dont give essays
         """,
         
         "nutrition": f"""
@@ -305,7 +305,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. Sample one-day meal plan
         7. Healthy snack options
         
-        Consider age-appropriate nutritional needs and BMI status. 
+        Consider age-appropriate nutritional needs and BMI status. And also give it kinda short, dont give essays
         """,
         
         "recovery": f"""
@@ -327,7 +327,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. When to seek medical attention
         7. Active recovery activities
         
-        Prioritize safety and proper technique. Provide detailed and comprehensive information.
+        Prioritize safety and proper technique. Provide detailed and comprehensive information.And also give it kinda short, dont give essays
         """,
         
         "tactical": f"""
@@ -348,7 +348,7 @@ def create_training_prompt(user_data, focus_area="general"):
         5. Reading the game
         6. Mental preparation for competition
         
-        Make it practical and easy to understand for young athletes. Provide detailed and comprehensive information.
+        Make it practical and easy to understand for young athletes. Provide detailed and comprehensive information.And also give it kinda short, dont give essays
         """,
         
         "mental": f"""
@@ -369,7 +369,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. Building confidence
         7. Handling pressure situations
         
-        Make it age-appropriate and practical. Provide detailed and comprehensive information.
+        Make it age-appropriate and practical. Provide detailed and comprehensive information.And also give it kinda short, dont give essays
         """
     }
     
@@ -1114,6 +1114,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
