@@ -279,7 +279,7 @@ def create_training_prompt(user_data, focus_area="general"):
         4. Safety precautions and form tips
         5. Intensity guidelines (1-10 scale)
         
-        Make it age-appropriate, safe, and motivating. Use emojis and bullet points. Format in tables. Provide detailed and comprehensive information.
+        Make it age-appropriate, safe, and motivating. Use emojis and bullet points.provide all day workout plan
         """,
         
         "nutrition": f"""
@@ -305,7 +305,7 @@ def create_training_prompt(user_data, focus_area="general"):
         6. Sample one-day meal plan
         7. Healthy snack options
         
-        Consider age-appropriate nutritional needs and BMI status. Format in tables. Provide detailed and comprehensive information.
+        Consider age-appropriate nutritional needs and BMI status. 
         """,
         
         "recovery": f"""
@@ -1145,5 +1145,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
