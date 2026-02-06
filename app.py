@@ -548,18 +548,6 @@ def generate_ai_plan(plan_type):
 def dashboard_page():
     st.markdown('<div class="main-header"><h1>🏠 Welcome to CoachBot AI!</h1></div>', unsafe_allow_html=True)
     
-    # AI Status Check
-    st.subheader("🤖 AI System Status")
-    if model:
-        st.success("✅ **AI Model Connected and Ready**")
-        st.info("All features are powered by AI. Your plans and advice will be personalized based on your profile.")
-    else:
-        st.error("❌ **AI Model Not Connected**")
-        st.error("The app requires a valid GEMINI_API_KEY to function.")
-        st.warning("Please add your API key to Streamlit secrets to enable all features.")
-    
-    st.markdown("---")
-    
     # Quick Stats
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -1126,6 +1114,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
