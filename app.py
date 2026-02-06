@@ -1,6 +1,3 @@
-caa finallall
-
-
 import streamlit as st
 import google.generativeai as genai
 import pandas as pd
@@ -1017,5 +1014,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
