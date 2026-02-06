@@ -12,7 +12,6 @@ import plotly.express as px
 from datetime import datetime
 import os
 
-# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="CoachBot AI",
     page_icon="🏆",
@@ -20,7 +19,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---------------- CUSTOM CSS ----------------
 def load_custom_css():
     st.markdown("""
     <style>
@@ -53,12 +51,11 @@ def load_custom_css():
 
 load_custom_css()
 
-# ---------------- API CONFIGURATION ----------------
+
 @st.cache_resource
 def initialize_gemini():
     """Initialize Gemini API with Streamlit secrets"""
     try:
-        # Try multiple possible secret names
         api_key = st.secrets.get("GEMINI_API_KEY", None)
         if not api_key:
             api_key = st.secrets.get("GOOGLE_API_KEY", None)
@@ -82,7 +79,6 @@ def initialize_gemini():
             }
         )
         
-        # Test the model
         test_response = model.generate_content("Test")
         return model
         
@@ -93,13 +89,13 @@ def initialize_gemini():
 
 model = initialize_gemini()
 
-# Check if model is available
+
 if not model:
     st.error("⚠️ **AI Features Not Available**")
     st.error("The app requires a valid Google Generative AI API key to function.")
     st.info("Please add your GEMINI_API_KEY to Streamlit secrets and restart the app.")
 
-# ---------------- SESSION STATE ----------------
+
 if 'page' not in st.session_state:
     st.session_state.page = 'Dashboard'
 if 'user_profile' not in st.session_state:
@@ -109,7 +105,6 @@ if 'workouts_generated' not in st.session_state:
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
-# ---------------- SPORT CONFIGURATION ----------------
 SPORT_CONFIG = {
     "Football": {
         "icon": "⚽",
@@ -137,7 +132,6 @@ SPORT_CONFIG = {
     }
 }
 
-# ---------------- BMI CALCULATOR ----------------
 def calculate_bmi(weight, height_cm):
     """Calculate BMI from weight (kg) and height (cm)"""
     height_m = height_cm / 100
@@ -181,7 +175,7 @@ def display_bmi_calculator():
         </div>
         """, unsafe_allow_html=True)
         
-        # Health recommendations based on BMI
+
         if bmi < 18.5:
             st.warning("""
             💡 **Recommendations:**
@@ -214,8 +208,7 @@ def display_bmi_calculator():
             - Work with a fitness professional for safe exercise program
             - Prioritize nutrition education and portion control
             """)
-        
-        # Store BMI in session state
+      
         st.session_state.user_profile.update({
             'weight': weight,
             'height': height,
@@ -224,7 +217,7 @@ def display_bmi_calculator():
             'bmi_category': category
         })
 
-# ---------------- SIDEBAR NAVIGATION ----------------
+
 def sidebar_navigation():
     with st.sidebar:
         st.markdown('<div class="main-header"><h2>🏆 CoachBot AI</h2></div>', unsafe_allow_html=True)
@@ -241,7 +234,7 @@ def sidebar_navigation():
         
         st.markdown("---")
         
-        # User Stats
+      
         st.subheader("📈 Your Stats")
         st.metric("Plans Generated", st.session_state.workouts_generated)
         if 'bmi' in st.session_state.user_profile:
@@ -252,7 +245,6 @@ def sidebar_navigation():
 
 sidebar_navigation()
 
-# ---------------- PROMPT TEMPLATES ----------------
 def create_training_prompt(user_data, focus_area="general"):
     """Create specialized prompt based on focus area"""
     
@@ -1014,6 +1006,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
