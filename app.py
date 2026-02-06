@@ -278,6 +278,8 @@ def create_training_prompt(user_data, focus_area="general"):
         3. Cool-down and stretching (10 minutes)
         4. Safety precautions and form tips
         5. Intensity guidelines (1-10 scale)
+        8. Response should be around 250-300 words
+        9.Table is must in the workout plan
         
         Make it age-appropriate, safe, and motivating. Use emojis and bullet points.provide all day workout plan.. And also give it kinda short, dont give essays
         """,
@@ -304,6 +306,8 @@ def create_training_prompt(user_data, focus_area="general"):
         5. Hydration guidelines
         6. Sample one-day meal plan
         7. Healthy snack options
+        8. Response should be around 250-300 words
+        9.Table is must in the nutition
         
         Consider age-appropriate nutritional needs and BMI status. And also give it kinda short, dont give essays
         """,
@@ -326,6 +330,7 @@ def create_training_prompt(user_data, focus_area="general"):
         5. Warning signs to watch for
         6. When to seek medical attention
         7. Active recovery activities
+
         
         Prioritize safety and proper technique. Provide detailed and comprehensive information.And also give it kinda short, dont give essays
         """,
@@ -1114,6 +1119,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
