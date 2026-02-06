@@ -534,334 +534,6 @@ def profile_setup_page():
             st.success("✅ Profile saved successfully!")
             st.info("🎉 Now you can generate your personalized training plan!")
 
-def training_plan_page():
-    try:
-        st.markdown('<div class="main-header"><h1>💪 Training Plan Generator</h1></div>', unsafe_allow_html=True)
-        
-        # Check if profile exists
-        if not st.session_state.user_profile or 'sport' not in st.session_state.user_profile:
-            st.warning("⚠️ Please set up your profile first!")
-            st.info("💡 Go to the Profile Setup page and complete your profile.")
-            return
-        
-        # Display current profile summary
-        st.subheader("📋 Your Profile")
-        profile = st.session_state.user_profile
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Sport", f"{SPORT_CONFIG.get(profile['sport'], {}).get('icon', '🏆')} {profile['sport']}")
-            st.metric("Position", profile['position'])
-        with col2:
-            st.metric("Fitness Level", profile['fitness_level'])
-            st.metric("Experience", profile['experience'])
-        with col3:
-            st.metric("BMI", f"{profile.get('bmi', 'N/A')}")
-            st.metric("Goal", profile['goal'])
-        
-        st.markdown("---")
-        
-        # Generate Options
-        st.subheader("🎯 Generate Your Plan")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.button("🏋️ Workout Plan", use_container_width=True):
-                generate_ai_plan("workout")
-        
-        with col2:
-            if st.button("🥗 Nutrition Plan", use_container_width=True):
-                generate_ai_plan("nutrition")
-        
-        with col3:
-            if st.button("🏥 Recovery Plan", use_container_width=True):
-                generate_ai_plan("recovery")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("🧠 Mental Training", use_container_width=True):
-                generate_ai_plan("mental")
-        
-        with col2:
-            if st.button("🎯 Tactical Tips", use_container_width=True):
-                generate_ai_plan("tactical")
-        
-        # Display generated plan
-        if 'generated_plan' in st.session_state and st.session_state.generated_plan:
-            st.markdown("---")
-            st.markdown('<div class="main-header"><h2>📋 Your Personalized Plan</h2></div>', unsafe_allow_html=True)
-            st.markdown(st.session_state.generated_plan)
-    except Exception as e:
-        st.error(f"Error in training plan page: {str(e)}")
-        return
-
-def nutrition_page():
-    try:
-        st.markdown('<div class="main-header"><h1>🥗 Nutrition Guide</h1></div>', unsafe_allow_html=True)
-        
-        if not st.session_state.user_profile:
-            st.warning("⚠️ Please set up your profile first!")
-            return
-        
-        profile = st.session_state.user_profile
-        
-        st.subheader("📊 Your Nutritional Needs")
-        
-        # Calculate daily calories based on BMI and activity
-        weight = profile.get('weight', 65)
-        height = profile.get('height', 170)
-        age = profile.get('age', 15)
-        gender = profile.get('gender', 'Male')
-        
-        # Simple BMR calculation
-        if gender == "Male":
-            bmr = 10 * weight + 6.25 * height - 5 * age + 5
-        else:
-            bmr = 10 * weight + 6.25 * height - 5 * age - 161
-        
-        activity_multiplier = {
-            "2 days/week": 1.375,
-            "3 days/week": 1.55,
-            "4 days/week": 1.725,
-            "5 days/week": 1.9
-        }
-        
-        frequency = profile.get('frequency', '3 days/week')
-        tdee = bmr * activity_multiplier.get(frequency, 1.55)
-        
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("🔥 BMR", f"{int(bmr)} cal")
-        with col2:
-            st.metric("⚡ Daily Calories", f"{int(tdee)} cal")
-        with col3:
-            st.metric("🥩 Protein", f"{int((tdee * 0.3) / 4)}g")
-        with col4:
-            st.metric("🍞 Carbs", f"{int((tdee * 0.45) / 4)}g")
-    except Exception as e:
-        st.error(f"Error calculating nutrition data: {str(e)}")
-        return
-    
-    st.markdown("---")
-        
-        # Meal Suggestions
-        st.subheader("🍽️ Daily Meal Structure")
-        
-        meals = [
-            {
-                "name": "🌅 Breakfast",
-                "time": "7:00 AM",
-                "calories": int(tdee * 0.25),
-                "suggestions": [
-                    "Oatmeal with berries and nuts",
-                    "Greek yogurt with honey and fruit",
-                    "Whole grain toast with eggs",
-                    "Smoothie with protein powder, banana, and spinach"
-                ]
-            },
-            {
-                "name": "🥪 Lunch",
-                "time": "12:30 PM",
-                "calories": int(tdee * 0.30),
-                "suggestions": [
-                    "Grilled chicken salad with quinoa",
-                    "Turkey sandwich on whole grain bread",
-                    "Brown rice with vegetables and lean protein",
-                    "Pasta with tomato sauce and ground turkey"
-                ]
-            },
-            {
-                "name": "🍎 Snack",
-                "time": "3:30 PM",
-                "calories": int(tdee * 0.15),
-                "suggestions": [
-                    "Apple with almond butter",
-                    "Greek yogurt with granola",
-                    "Protein shake",
-                    "Mixed nuts and dried fruits"
-                ]
-            },
-            {
-                "name": "🍝 Dinner",
-                "time": "7:00 PM",
-                "calories": int(tdee * 0.30),
-                "suggestions": [
-                    "Grilled fish with vegetables",
-                    "Lean beef stir-fry with brown rice",
-                    "Chicken breast with sweet potato",
-                    "Vegetable curry with lentils"
-                ]
-            }
-        ]
-        
-        for meal in meals:
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3>{meal['name']} - {meal['time']}</h3>
-                <p><strong>Calories:</strong> {meal['calories']}</p>
-                <p><strong>Suggestions:</strong></p>
-                <ul>
-            """, unsafe_allow_html=True)
-            
-            for suggestion in meal['suggestions']:
-                st.markdown(f"<li>{suggestion}</li>", unsafe_allow_html=True)
-            
-            st.markdown("</ul></div>", unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        # Hydration
-        st.subheader("💧 Hydration Guidelines")
-        st.info("""
-        💧 **Daily Water Intake:** 2-3 liters
-        
-        **Additional fluid needs during training:**
-        - Before training: 500ml (2 hours before)
-        - During training: 150-200ml every 15-20 minutes
-        - After training: 500-750ml for recovery
-        
-        **Signs of dehydration:**
-        - Dark urine
-        - Dry mouth
-        - Fatigue
-        - Dizziness
-        """)
-    except Exception as e:
-        st.error(f"Error displaying nutrition information: {str(e)}")
-        return
-
-def ai_coach_page():
-    st.markdown('<div class="main-header"><h1>💬 AI Coach Chat</h1></div>', unsafe_allow_html=True)
-    
-    # Check if API is configured
-    if not model:
-        st.warning("⚠️ **AI Coach is currently unavailable**")
-        st.info("""
-        📝 **Note:** The AI Coach feature requires a Google Generative AI API key.
-        
-        **To enable AI features:**
-        1. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-        2. Add it to your Streamlit secrets as `GEMINI_API_KEY`
-        3. Restart the app
-        
-        **Available Features without API:**
-        - ✅ BMI Calculator
-        - ✅ Profile Setup
-        - ✅ Nutrition Guide (pre-calculated)
-        - ✅ Dashboard
-        """)
-        return
-    
-    # Chat History Display
-    chat_container = st.container()
-    
-    with chat_container:
-        if not st.session_state.chat_history:
-            st.info("""
-            👋 **Hello! I'm your AI Coach. Ask me anything about:**
-            
-            - Training techniques and exercises
-            - Nutrition and meal planning
-            - Injury prevention and recovery
-            - Mental training and motivation
-            - Sport-specific strategies
-            
-            How can I help you today?
-            """)
-        else:
-            for message in st.session_state.chat_history:
-                if message['role'] == 'user':
-                    st.markdown(f"""
-                    <div style="background: #667eea; color: white; padding: 15px; border-radius: 10px; margin: 10px 0;">
-                        <strong>You:</strong> {message['content']}
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div style="background: white; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #667eea;">
-                        <strong>🏋️ CoachBot:</strong> {message['content']}
-                    </div>
-                    """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # User Input
-    user_question = st.text_area("Ask your question:", 
-        placeholder="e.g., How can I improve my sprint speed?", height=100)
-    
-    col1, col2 = st.columns([4, 1])
-    with col2:
-        if st.button("Send 📤", use_container_width=True):
-            if user_question:
-                # Add user message
-                st.session_state.chat_history.append({"role": "user", "content": user_question})
-                
-                # Create context
-                context = f"""
-                You are a friendly and knowledgeable youth sports coach.
-                
-                User Profile: {st.session_state.user_profile if st.session_state.user_profile else 'New user'}
-                
-                Question: {user_question}
-                
-                Provide helpful, encouraging, and age-appropriate advice.
-                Use emojis to make it engaging. Keep responses concise but comprehensive.
-                """
-                
-                try:
-                    with st.spinner("🏋️ CoachBot is thinking..."):
-                        response = model.generate_content(context)
-                        ai_response = response.text
-                    
-                    st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Sorry, I encountered an error: {str(e)}")
-                    st.session_state.chat_history.append({
-                        "role": "assistant", 
-                        "content": "Sorry, I couldn't process your request right now. Please try again later."
-                    })
-                    st.rerun()
-            else:
-                st.warning("Please enter a question.")
-    
-    # Quick Questions
-    st.markdown("---")
-    st.subheader("💡 Quick Questions")
-    
-    quick_questions = [
-        "How can I prevent sports injuries?",
-        "What should I eat before training?",
-        "How can I improve my endurance?",
-        "What's the best way to recover after a workout?",
-        "How do I stay motivated to train?"
-    ]
-    
-    cols = st.columns(5)
-    for i, question in enumerate(quick_questions):
-        with cols[i]:
-            if st.button(question, key=f"quick_{i}", use_container_width=True):
-                st.session_state.chat_history.append({"role": "user", "content": question})
-                try:
-                    context = f"""
-                    You are a friendly youth sports coach.
-                    Answer this question: {question}
-                    Be encouraging and provide practical, age-appropriate advice.
-                    """
-                    response = model.generate_content(context)
-                    st.session_state.chat_history.append({"role": "assistant", "content": response.text})
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Sorry, I encountered an error: {str(e)}")
-                    st.session_state.chat_history.append({
-                        "role": "assistant", 
-                        "content": "Sorry, I couldn't process your request right now. Please try again later."
-                    })
-                    st.rerun()
-
-# ---------------- HELPER FUNCTIONS ----------------
 def get_fallback_plan(plan_type, profile):
     """Get pre-calculated plans as fallback when API is unavailable"""
     
@@ -906,10 +578,10 @@ def get_fallback_plan(plan_type, profile):
         # 🥗 Nutrition Plan for {weight}kg Athlete
         
         ## 📊 Daily Nutrition Goals
-        - **Calories:** ~{int(weight * 30-35)} kcal
-        - **Protein:** {int(weight * 1.6-2.0)}g (1.6-2.0g per kg)
-        - **Carbs:** {int(weight * 5-7)}g (5-7g per kg)
-        - **Fats:** {int(weight * 0.8-1.0)}g (0.8-1.0g per kg)
+        - **Calories:** ~{int(weight * 30)} kcal
+        - **Protein:** {int(weight * 1.8)}g (1.8g per kg)
+        - **Carbs:** {int(weight * 6)}g (6g per kg)
+        - **Fats:** {int(weight * 0.9)}g (0.9g per kg)
         
         ## 🍽️ Sample Daily Menu
         
@@ -1097,11 +769,336 @@ def generate_ai_plan(plan_type):
         st.info("Falling back to pre-designed plan template...")
         
         # Use fallback plan on error
+        profile = st.session_state.user_profile
         fallback_plan = get_fallback_plan(plan_type, profile)
         st.session_state.generated_plan = fallback_plan
         st.session_state.workouts_generated += 1
         st.rerun()
         return
+
+def training_plan_page():
+    try:
+        st.markdown('<div class="main-header"><h1>💪 Training Plan Generator</h1></div>', unsafe_allow_html=True)
+        
+        # Check if profile exists
+        if not st.session_state.user_profile or 'sport' not in st.session_state.user_profile:
+            st.warning("⚠️ Please set up your profile first!")
+            st.info("💡 Go to the Profile Setup page and complete your profile.")
+            return
+        
+        # Display current profile summary
+        st.subheader("📋 Your Profile")
+        profile = st.session_state.user_profile
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Sport", f"{SPORT_CONFIG.get(profile['sport'], {}).get('icon', '🏆')} {profile['sport']}")
+            st.metric("Position", profile['position'])
+        with col2:
+            st.metric("Fitness Level", profile['fitness_level'])
+            st.metric("Experience", profile['experience'])
+        with col3:
+            st.metric("BMI", f"{profile.get('bmi', 'N/A')}")
+            st.metric("Goal", profile['goal'])
+        
+        st.markdown("---")
+        
+        # Generate Options
+        st.subheader("🎯 Generate Your Plan")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🏋️ Workout Plan", use_container_width=True):
+                generate_ai_plan("workout")
+        
+        with col2:
+            if st.button("🥗 Nutrition Plan", use_container_width=True):
+                generate_ai_plan("nutrition")
+        
+        with col3:
+            if st.button("🏥 Recovery Plan", use_container_width=True):
+                generate_ai_plan("recovery")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🧠 Mental Training", use_container_width=True):
+                generate_ai_plan("mental")
+        
+        with col2:
+            if st.button("🎯 Tactical Tips", use_container_width=True):
+                generate_ai_plan("tactical")
+        
+        # Display generated plan
+        if 'generated_plan' in st.session_state and st.session_state.generated_plan:
+            st.markdown("---")
+            st.markdown('<div class="main-header"><h2>📋 Your Personalized Plan</h2></div>', unsafe_allow_html=True)
+            st.markdown(st.session_state.generated_plan)
+    except Exception as e:
+        st.error(f"Error in training plan page: {str(e)}")
+        return
+
+def nutrition_page():
+    try:
+        st.markdown('<div class="main-header"><h1>🥗 Nutrition Guide</h1></div>', unsafe_allow_html=True)
+        
+        if not st.session_state.user_profile:
+            st.warning("⚠️ Please set up your profile first!")
+            return
+        
+        profile = st.session_state.user_profile
+        
+        st.subheader("📊 Your Nutritional Needs")
+        
+        # Calculate daily calories based on BMI and activity
+        weight = profile.get('weight', 65)
+        height = profile.get('height', 170)
+        age = profile.get('age', 15)
+        gender = profile.get('gender', 'Male')
+        
+        # Simple BMR calculation
+        if gender == "Male":
+            bmr = 10 * weight + 6.25 * height - 5 * age + 5
+        else:
+            bmr = 10 * weight + 6.25 * height - 5 * age - 161
+        
+        activity_multiplier = {
+            "2 days/week": 1.375,
+            "3 days/week": 1.55,
+            "4 days/week": 1.725,
+            "5 days/week": 1.9
+        }
+        
+        frequency = profile.get('frequency', '3 days/week')
+        tdee = bmr * activity_multiplier.get(frequency, 1.55)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("🔥 BMR", f"{int(bmr)} cal")
+        with col2:
+            st.metric("⚡ Daily Calories", f"{int(tdee)} cal")
+        with col3:
+            st.metric("🥩 Protein", f"{int((tdee * 0.3) / 4)}g")
+        with col4:
+            st.metric("🍞 Carbs", f"{int((tdee * 0.45) / 4)}g")
+        
+        st.markdown("---")
+        
+        # Meal Suggestions
+        st.subheader("🍽️ Daily Meal Structure")
+        
+        meals = [
+            {
+                "name": "🌅 Breakfast",
+                "time": "7:00 AM",
+                "calories": int(tdee * 0.25),
+                "suggestions": [
+                    "Oatmeal with berries and nuts",
+                    "Greek yogurt with honey and fruit",
+                    "Whole grain toast with eggs",
+                    "Smoothie with protein powder, banana, and spinach"
+                ]
+            },
+            {
+                "name": "🥪 Lunch",
+                "time": "12:30 PM",
+                "calories": int(tdee * 0.30),
+                "suggestions": [
+                    "Grilled chicken salad with quinoa",
+                    "Turkey sandwich on whole grain bread",
+                    "Brown rice with vegetables and lean protein",
+                    "Pasta with tomato sauce and ground turkey"
+                ]
+            },
+            {
+                "name": "🍎 Snack",
+                "time": "3:30 PM",
+                "calories": int(tdee * 0.15),
+                "suggestions": [
+                    "Apple with almond butter",
+                    "Greek yogurt with granola",
+                    "Protein shake",
+                    "Mixed nuts and dried fruits"
+                ]
+            },
+            {
+                "name": "🍝 Dinner",
+                "time": "7:00 PM",
+                "calories": int(tdee * 0.30),
+                "suggestions": [
+                    "Grilled fish with vegetables",
+                    "Lean beef stir-fry with brown rice",
+                    "Chicken breast with sweet potato",
+                    "Vegetable curry with lentils"
+                ]
+            }
+        ]
+        
+        for meal in meals:
+            st.markdown(f"""
+            <div class="metric-card">
+                <h3>{meal['name']} - {meal['time']}</h3>
+                <p><strong>Calories:</strong> {meal['calories']}</p>
+                <p><strong>Suggestions:</strong></p>
+                <ul>
+        """, unsafe_allow_html=True)
+            
+            for suggestion in meal['suggestions']:
+                st.markdown(f"<li>{suggestion}</li>", unsafe_allow_html=True)
+            
+            st.markdown("</ul></div>", unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Hydration
+        st.subheader("💧 Hydration Guidelines")
+        st.info("""
+        💧 **Daily Water Intake:** 2-3 liters
+        
+        **Additional fluid needs during training:**
+        - Before training: 500ml (2 hours before)
+        - During training: 150-200ml every 15-20 minutes
+        - After training: 500-750ml for recovery
+        
+        **Signs of dehydration:**
+        - Dark urine
+        - Dry mouth
+        - Fatigue
+        - Dizziness
+        """)
+    except Exception as e:
+        st.error(f"Error in nutrition page: {str(e)}")
+        return
+
+def ai_coach_page():
+    st.markdown('<div class="main-header"><h1>💬 AI Coach Chat</h1></div>', unsafe_allow_html=True)
+    
+    # Check if API is configured
+    if not model:
+        st.warning("⚠️ **AI Coach is currently unavailable**")
+        st.info("""
+        📝 **Note:** The AI Coach feature requires a Google Generative AI API key.
+        
+        **To enable AI features:**
+        1. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+        2. Add it to your Streamlit secrets as `GEMINI_API_KEY`
+        3. Restart the app
+        
+        **Available Features without API:**
+        - ✅ BMI Calculator
+        - ✅ Profile Setup
+        - ✅ Nutrition Guide (pre-calculated)
+        - ✅ Dashboard
+        """)
+        return
+    
+    # Chat History Display
+    chat_container = st.container()
+    
+    with chat_container:
+        if not st.session_state.chat_history:
+            st.info("""
+            👋 **Hello! I'm your AI Coach. Ask me anything about:**
+            
+            - Training techniques and exercises
+            - Nutrition and meal planning
+            - Injury prevention and recovery
+            - Mental training and motivation
+            - Sport-specific strategies
+            
+            How can I help you today?
+            """)
+        else:
+            for message in st.session_state.chat_history:
+                if message['role'] == 'user':
+                    st.markdown(f"""
+                    <div style="background: #667eea; color: white; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                        <strong>You:</strong> {message['content']}
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div style="background: white; padding: 15px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #667eea;">
+                        <strong>🏋️ CoachBot:</strong> {message['content']}
+                    </div>
+                    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # User Input
+    user_question = st.text_area("Ask your question:", 
+        placeholder="e.g., How can I improve my sprint speed?", height=100)
+    
+    col1, col2 = st.columns([4, 1])
+    with col2:
+        if st.button("Send 📤", use_container_width=True):
+            if user_question:
+                # Add user message
+                st.session_state.chat_history.append({"role": "user", "content": user_question})
+                
+                # Create context
+                context = f"""
+                You are a friendly and knowledgeable youth sports coach.
+                
+                User Profile: {st.session_state.user_profile if st.session_state.user_profile else 'New user'}
+                
+                Question: {user_question}
+                
+                Provide helpful, encouraging, and age-appropriate advice.
+                Use emojis to make it engaging. Keep responses concise but comprehensive.
+                """
+                
+                try:
+                    with st.spinner("🏋️ CoachBot is thinking..."):
+                        response = model.generate_content(context)
+                        ai_response = response.text
+                    
+                    st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Sorry, I encountered an error: {str(e)}")
+                    st.session_state.chat_history.append({
+                        "role": "assistant", 
+                        "content": "Sorry, I couldn't process your request right now. Please try again later."
+                    })
+                    st.rerun()
+            else:
+                st.warning("Please enter a question.")
+    
+    # Quick Questions
+    st.markdown("---")
+    st.subheader("💡 Quick Questions")
+    
+    quick_questions = [
+        "How can I prevent sports injuries?",
+        "What should I eat before training?",
+        "How can I improve my endurance?",
+        "What's the best way to recover after a workout?",
+        "How do I stay motivated to train?"
+    ]
+    
+    cols = st.columns(5)
+    for i, question in enumerate(quick_questions):
+        with cols[i]:
+            if st.button(question, key=f"quick_{i}", use_container_width=True):
+                st.session_state.chat_history.append({"role": "user", "content": question})
+                try:
+                    context = f"""
+                    You are a friendly youth sports coach.
+                    Answer this question: {question}
+                    Be encouraging and provide practical, age-appropriate advice.
+                    """
+                    response = model.generate_content(context)
+                    st.session_state.chat_history.append({"role": "assistant", "content": response.text})
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Sorry, I encountered an error: {str(e)}")
+                    st.session_state.chat_history.append({
+                        "role": "assistant", 
+                        "content": "Sorry, I couldn't process your request right now. Please try again later."
+                    })
+                    st.rerun()
 
 # ---------------- MAIN APP LOGIC ----------------
 def main():
