@@ -170,7 +170,7 @@ def display_bmi_calculator():
         height = st.number_input("Height (cm)", min_value=100, max_value=250, value=170, step=1)
     
     with col3:
-        age = st.number_input("Age", min_value=10, max_value=30, value=15, step=1)
+        age = st.number_input("Age", min_value=10, max_value=70, value=15, step=1)
     
     if st.button("Calculate BMI", use_container_width=True):
         bmi = calculate_bmi(weight, height)
@@ -1119,6 +1119,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
