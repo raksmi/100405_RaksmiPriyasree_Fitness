@@ -3,6 +3,9 @@
 An AI-powered fitness coaching application designed for youth athletes. CoachBot AI leverages Google Generative AI to provide personalized workout plans, nutrition guidance, injury recovery strategies, mental training, and real-time coaching chat.
 
 
+LIVE APP LINK: https://1000405fitnessapp.streamlit.app/ 
+
+
 ## ✨ Features
 
 ### 📊 Dashboard
