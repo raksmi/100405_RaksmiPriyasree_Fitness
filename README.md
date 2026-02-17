@@ -5,6 +5,10 @@ An AI-powered fitness coaching application designed for youth athletes. CoachBot
 
 LIVE APP LINK: https://1000405fitnessapp.streamlit.app/ 
 
+SCREENSHOTS LINK: https://www.canva.com/design/DAHAh8NVSa8/76e1SoOPIckglTdCfbf9sQ/view?utm_content=DAHAh8NVSa8&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h535cb0b11c
+
+
+
 
 ## ✨ Features
 
